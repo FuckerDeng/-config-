@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+
+        <!--===============================================处理器映射器配置=======================================================-->
+        <!--根据框架流程一步一步配置就行-->
+        <!--处理器映射器：将bean的name作为url进行查找，需要在配置Handler时指定beanname（就是url）-->
+        <bean class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping"/>
+
+        <!--另一个处理器映射器-->
+        <bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+                <property name="mappings">
+                        <props>
+                                <!--key为请求的url，myHandler2和handler1为配置的handler的id-->
+                                <prop key="/fictions.do">myHandler2</prop>
+                                <prop key="/test.do">handler1</prop>
+                        </props>
+                </property>
+        </bean>
+
+        <!--使用注解处理器映射器:注解映射器和适配器必须成对使用，使用注解更方便，上面两个就可以注释不用了-->
+        <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/>
+        <!--===============================================处理器适配器配置=======================================================-->
+
+        <!--处理器适配器-->
+        <!-- 处理器适配器：HandlerAdapter。所有处理器适配器都实现了HandlerAdapter接口-->
+        <!-- SimpleControllerHandlerAdapter适配器能执行实现了Controller接口的Handler
+        所以，现在配置了这个适配器的话，所有的处理器Handler必须要实现Controller接口才行。
+
+        在SimpleControllerHandlerAdapter源码中，supports方法接收一个handler对象，会判断这个handler是否是Controller
+        的实现类，在handle方法中会调用handler对象的handleRequest方法来对请求进行处理，而这个handler对象的handleRequest方法是我们自己
+        实现的，实现中可以直接返回响应数据或者返回ModelAndView，接着让视图解析器进行视图渲染解析
+        -->
+        <bean class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter"/>
+
+        <!--另一个处理器适配器:此适配器能执行实现了HttpRequestHandler接口的handler-->
+        <!--HttpRequestHandler的handleRequest方法，没有返回值ModelAndView，因此这个处理器一般用来直接响应数据，比如json字符串等-->
+        <bean class="org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter"/>
+
+        <!--注解处理器适配器配置-->
+        <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"/>
+
+        <!--使用mvc:annotation-driven可以代替上面的注解处理器映射器和注解处理器适配器的配置，-->
+        <!--此配置会默认加载很多参数绑定方法，而上面两种配置不会，比如json转换解析器就默认加载了-->
+        <!--实际开发中一般都使用这个配置方式-->
+        <mvc:annotation-driven></mvc:annotation-driven>
+        <!--===============================================处理器配置=======================================================-->
+
+        <!--配置处理器：我们自己实现Controller的类-->
+        <bean id="handler1" name="/test.do" class="handler.MyHandler"/>
+
+        <!--配置处理器：我们自己实现了HttpRequestHandler的类-->
+        <bean id="myHandler2" class="handler.MyHandler2"/>
+
+        <!--使用注解处理器映射器和处理器适配器配置后，自己写的handler处理器可以一个一个配置，但是当量大的时候非常麻烦，一般建议对-->
+        <!--包进行扫描，可以扫描controller、serverce等等-->
+        <context:component-scan base-package="handler"></context:component-scan>
+
+        <!--===============================================视图解析器配置=======================================================-->
+
+        <!-- 配置视图解析器：如果有返回ModelAndView,则用此类进行解析
+        进行jsp解析，默认使用jstl标签，classpath下得有jstl的包
+        -->
+        <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"/>
+</beans>
