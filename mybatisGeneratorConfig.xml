@@ -12,6 +12,8 @@
                         connectionURL="jdbc:mysql://127.0.0.1:3306/fiction_qidian?characterEncoding=UTF-8&amp;serverTimezone=UTC&amp;useSSL=false"
                         userId="root"
                         password="123456">
+            <!-- 设置此属性是为了不生成Key和WithBLOBs类，具体可以查下 -->
+            <property name="nullCatalogMeansCurrent" value="true" />
         </jdbcConnection>
         <!-- Oracle数据库
             <jdbcConnection driverClass="oracle.jdbc.OracleDriver"
