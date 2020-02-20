@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN" "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
 
 <generatorConfiguration>
     <context id="DB2Tables" targetRuntime="MyBatis3">
@@ -9,11 +10,11 @@
         </commentGenerator>
         <!-- Mysql数据库连接的信息：驱动类、连接地址、用户名、密码 -->
         <jdbcConnection driverClass="com.mysql.cj.jdbc.Driver"
-                        connectionURL="jdbc:mysql://127.0.0.1:3306/fiction_qidian?characterEncoding=UTF-8&amp;serverTimezone=UTC&amp;useSSL=false"
+                        connectionURL="jdbc:mysql://127.0.0.1:3306/mybatis?characterEncoding=UTF-8&amp;serverTimezone=UTC&amp;useSSL=false"
                         userId="root"
                         password="123456">
-            <!-- 设置此属性是为了不生成Key和WithBLOBs类，具体可以查下 -->
-            <property name="nullCatalogMeansCurrent" value="true" />
+            <!--此属性阻止生成XXKey和XXWithBlobs文件-->
+            <property name="nullCatalogMeansCurrent" value="true"></property>
         </jdbcConnection>
         <!-- Oracle数据库
             <jdbcConnection driverClass="oracle.jdbc.OracleDriver"
@@ -25,34 +26,41 @@
 
         <!-- 默认为false，把JDBC DECIMAL 和NUMERIC类型解析为Integer，为true时
         把JDBC DECIMAL 和NUMERIC类型解析为java.math.BigDecimal -->
-        <javaTypeResolver >
-            <property name="forceBigDecimals" value="false" />
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"/>
         </javaTypeResolver>
 
         <!-- targetProject：生成POJO类的位置 -->
-        <javaModelGenerator targetPackage="bean" targetProject=".\src\main\sources">
+        <javaModelGenerator targetPackage="df.beans" targetProject="D:\Project\JavaProject\springmvc1\src\main\java">
             <!-- enableSubPackages:是否让schema作为包的后缀 -->
-            <property name="enableSubPackages" value="false" />
+            <property name="enableSubPackages" value="false"/>
             <!-- 从数据库返回的值被清理前后的空格 -->
-            <property name="trimStrings" value="true" />
+            <property name="trimStrings" value="true"/>
         </javaModelGenerator>
 
-        <!-- targetProject：mapper映射文件生成的位置 -->
-        <sqlMapGenerator targetPackage="mapper"  targetProject=".\src\main\sources">
+        <!-- targetProject：mapper XML映射文件生成的位置 -->
+        <sqlMapGenerator targetPackage="mapping" targetProject="D:\Project\JavaProject\springmvc1\src\main\java\df">
             <!-- enableSubPackages:是否让schema作为包的后缀 -->
-            <property name="enableSubPackages" value="false" />
+            <property name="enableSubPackages" value="false"/>
         </sqlMapGenerator>
 
         <!-- targetProject：mapper接口生成的的位置 -->
-        <javaClientGenerator type="XMLMAPPER" targetPackage="mapper"  targetProject=".\src\main\sources">
+        <javaClientGenerator type="XMLMAPPER" targetPackage="df.mapper" targetProject="D:\Project\JavaProject\springmvc1\src\main\java">
             <!-- enableSubPackages:是否让schema作为包的后缀 -->
-            <property name="enableSubPackages" value="false" />
+            <property name="enableSubPackages" value="false"/>
         </javaClientGenerator>
 
-        <!-- 指定数据表 -->
-        <table schema="" tableName="chapter"></table>
-        <table schema="" tableName="content"></table>
-        <table schema="" tableName="fiction"></table>
+        <!-- 指定数据表 里面的其他属性表示不生成example文件-->
+        <table schema="" tableName="user"
+               enableCountByExample="false"
+                enableUpdateByExample="false"
+               enableDeleteByExample="false"
+               enableSelectByExample="false"
+               selectByExampleQueryId="false"
+        >
+            <columnOverride column="username" javaType="java.lang.String" jdbcType="VARCHAR"/>
+            <columnOverride column="password" javaType="java.lang.String" jdbcType="VARCHAR"/>
+        </table>
 
 
         <!-- 有些表的字段需要指定java类型
@@ -66,3 +74,19 @@
 
     </context>
 </generatorConfiguration>
+
+<!--
+注意事项
+targetProject
+targetProject 应该为目标文件所在的目录，与 maven 命令执行时所在目录的相对路径。Maven 插件在 IDEA 中运行的目录即为项目所在的根目录，因此生成的类文件在SpringBoot 项目中，应该在 src/main/java 路径下的包中，mapper 文件可以放在 src/main/resources 路径的文件夹中。
+因此 <javaModelGenerator> 和 <javaClientGenerator> 都指定了 targetProject 为 src/main/java，再根据 targetPackage 存放到不同的包中；<sqlMapGenerator> 指定了 targetProject 为 src/main/resources，再根据 targetPackage 存放到不同的文件夹中。
+
+UserExample
+Mybatis Generator 默认生成实体类对应的 xxxExample 类，用于构造复杂的筛选条件。一般开发中会去掉这些 Example 类，在 <table> 标签中添加属性 enableCountByExample="false" enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false" selectByExampleQueryId="false" ，即可阻止生成此类。
+
+UserKey 和 UserWithBlobs
+对于 MySQL 数据库，在生成 User 实体类时，还会同时生成 Userkey 和 UserWithBlobs 实体类，原因在于 MySQL 不支持 catalogs 和 schema。在 MySQL 8.0 以上的版本中，在生成 User 表的实体类时，Mybatis Generator 会找到多张 User 表，包括 MySQL information schemas 中的多张 User 表，生成了多个 User 相关的实体类。
+要保证只生成自己指定的 database 中的 User 表，首先要在 <jdbcConnection> 中的 connectionURL 中指定数据库的实例名，然后在 <jdbcConnection> 中添加相关配置信息，即 <property name="nullCatalogMeansCurrent" value="true"/>，即可保证只生成自己需要的 User 类。
+
+
+-->
